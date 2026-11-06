@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#10152d">
+<title>Falcon AI — Study Planner</title>
+<style>
+:root{--bg:#0b1022;--panel:#141c36;--panel2:#1b2647;--text:#f4f6ff;--muted:#aab4d3;--accent:#8b7cff;--cyan:#55d6e8;--line:#2b365b;--green:#62d6a5}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0%,#202653 0,transparent 34%),var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,Segoe UI,Arial,sans-serif}
+header{padding:28px clamp(18px,5vw,60px) 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:13px}.logo{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,var(--accent),var(--cyan));display:grid;place-items:center;color:#0b1022;font-size:25px;font-weight:900;box-shadow:0 8px 30px #766cff55}
+h1{font-size:25px;margin:0;letter-spacing:.5px}.tag{color:var(--muted);font-size:12px;margin-top:2px}.date{color:var(--muted);font-size:13px}
+main{max-width:1200px;margin:auto;padding:0 clamp(16px,4vw,48px) 50px}
+.welcome{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin:18px 0 22px}.welcome h2{font-size:clamp(23px,4vw,32px);margin:0}.welcome p{margin:5px 0 0;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}.stat,.panel{background:linear-gradient(145deg,#182243,#121a33);border:1px solid var(--line);border-radius:18px;padding:18px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:27px;margin-top:4px}
+.layout{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}.panel h3{margin:0 0 14px;font-size:17px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}input,select,textarea{width:100%;background:#0d1530;border:1px solid #344064;border-radius:10px;padding:11px;color:var(--text);font:inherit;outline:none}input:focus,select:focus{border-color:var(--accent)}.wide{grid-column:1/-1}
+button{border:0;border-radius:10px;padding:11px 15px;background:linear-gradient(120deg,var(--accent),#6c9cff);color:white;font-weight:700;cursor:pointer;font:inherit}button:hover{filter:brightness(1.1)}button.secondary{background:#263354;color:#dce3ff}button.danger{background:#49283b;color:#ffc4d3}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}
+.coursechips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 15px}.chip{background:#252e55;color:#cfd5ff;border:1px solid #3a4774;border-radius:99px;padding:5px 10px;font-size:11px}
+.tasklist{display:grid;gap:10px}.task{background:#101a35;border:1px solid var(--line);border-radius:13px;padding:12px;display:flex;justify-content:space-between;gap:12px;align-items:center}.task.done{opacity:.62}.task.done .taskname{text-decoration:line-through}.taskname{font-weight:700}.meta{font-size:12px;color:var(--muted);margin-top:3px}.taskbuttons{display:flex;gap:6px;flex-shrink:0}.taskbuttons button{padding:7px 9px;font-size:12px}.empty{color:var(--muted);text-align:center;padding:24px 8px;border:1px dashed #3a4569;border-radius:12px}
+.coursegrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.course{padding:11px;background:#101a35;border:1px solid var(--line);border-radius:12px}.course b{display:block;font-size:13px}.course span{font-size:11px;color:var(--muted)}
+.progressbar{height:9px;border-radius:99px;background:#273251;overflow:hidden;margin-top:10px}.progressbar div{height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));width:0%;transition:width .25s}
+footer{text-align:center;color:#7f8aaf;font-size:12px;margin:25px 0 0}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.stats{gap:9px}.stat{padding:13px}.stat strong{font-size:22px}}
+@media(max-width:460px){.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:1/-1}.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}.task{align-items:flex-start}.taskbuttons{flex-direction:column}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand"><div class="logo">✦</div><div><h1>FALCON AI</h1><div class="tag">YOUR SMART STUDY COMMAND CENTER</div></div></div>
+ <div class="date" id="today"></div>
+</header>
+<main>
+ <section class="welcome"><div><h2>Plan your day. Own your goals.</h2><p>Organize every course, build a study routine, and track your progress.</p></div><span class="chip">✦ Stay focused • Keep flying</span></section>
+ <section class="stats">
+  <div class="stat"><small>Study sessions</small><strong id="total">0</strong></div>
+  <div class="stat"><small>Completed</small><strong id="completed">0</strong></div>
+  <div class="stat"><small>Completion</small><strong id="percent">0%</strong><div class="progressbar"><div id="progress"></div></div></div>
+ </section>
+ <section class="layout">
+  <div class="panel">
+   <h3>＋ Add a study session</h3>
+   <form id="taskForm">
+    <div class="formgrid">
+     <div class="wide"><label for="taskName">What will you study?</label><input id="taskName" placeholder="e.g. Chapter 4 — Chemical Bonding" required maxlength="90"></div>
+     <div><label for="course">Course / subject</label><select id="course" required></select></div>
+     <div><label for="customCourse">Add your own course (optional)</label><input id="customCourse" placeholder="e.g. Web Development" maxlength="40"></div>
+     <div><label for="studyDate">Date</label><input id="studyDate" type="date" required></div>
+     <div><label for="studyTime">Start time</label><input id="studyTime" type="time" required></div>
+     <div><label for="duration">Duration (minutes)</label><input id="duration" type="number" min="5" max="600" value="60" required></div>
+     <div><label for="kind">Session type</label><select id="kind"><option>Learning</option><option>Revision</option><option>Practice / MCQs</option><option>Test / Mock</option><option>Assignment</option></select></div>
+    </div>
+    <div class="actions"><button type="submit">Add to my schedule</button><button class="secondary" type="reset">Clear</button></div>
+   </form>
+   <div class="coursechips"><span class="chip">Auto-saves on this device</span><span class="chip">Add unlimited custom courses</span></div>
+   <h3 style="margin-top:22px">Your course library</h3>
+   <div class="coursegrid" id="courseLibrary"></div>
+  </div>
+  <div class="panel">
+   <h3>▣ My study schedule</h3>
+   <div class="formgrid" style="margin-bottom:13px">
+    <div><label for="filterDate">Show date</label><input id="filterDate" type="date"></div>
+    <div><label for="filterCourse">Filter course</label><select id="filterCourse"><option value="All">All courses</option></select></div>
+   </div>
+   <div class="tasklist" id="taskList"></div>
+   <div class="actions"><button class="secondary" id="allBtn" type="button">Show all dates</button><button class="secondary" id="exportBtn" type="button">Export schedule</button></div>
+  </div>
+ </section>
+ <footer>FALCON AI • Your study data stays in this browser on this device.</footer>
+</main>
+<script>
+const starterCourses=[
+ ["Biology","Science"],["Chemistry","Science"],["Physics","Science"],["Mathematics","Mathematics"],["English","Languages"],["Urdu","Languages"],["Islamiat","General"],["Pakistan Studies","General"],["Computer Science","Computing"],["Information Technology","Computing"],["Artificial Intelligence","Computing"],["Data Science","Computing"],["Programming","Computing"],["Web Development","Computing"],["Analytical Reasoning","Entry Test"],["Quantitative Reasoning","Entry Test"],["Verbal Reasoning","Entry Test"],["NAT-IM Preparation","Entry Test"],["General Knowledge","General"],["Political Science","Social Sciences"],["Economics","Social Sciences"],["Statistics","Mathematics"],["Pharm-D Subjects","University"],["Other","Other"]
+];
+let customCourses=JSON.parse(localStorage.getItem("falconCourses")||"[]");
+let tasks=JSON.parse(localStorage.getItem("falconTasks")||"[]");
+const $=id=>document.getElementById(id);
+const today=new Date();const iso=d=>{let x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)};
+$("today").textContent=today.toLocaleDateString(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+$("studyDate").value=iso(today);$("filterDate").value=iso(today);
+function allCourses(){return [...starterCourses.map(x=>x[0]),...customCourses]}
+function save(){localStorage.setItem("falconTasks",JSON.stringify(tasks));localStorage.setItem("falconCourses",JSON.stringify(customCourses))}
+function fillCourses(){
+ const names=allCourses();$("course").innerHTML=names.map(n=>`<option>${escapeHtml(n)}</option>`).join("");
+ const old=$("filterCourse").value;$("filterCourse").innerHTML='<option value="All">All courses</option>'+names.map(n=>`<option>${escapeHtml(n)}</option>`).join("");$("filterCourse").value=names.includes(old)?old:"All";
+ $("courseLibrary").innerHTML=starterCourses.map(([n,c])=>`<div class="course"><b>${escapeHtml(n)}</b><span>${c}</span></div>`).join("")+customCourses.map(n=>`<div class="course"><b>${escapeHtml(n)}</b><span>Your course</span></div>`).join("");
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function render(){
+ const done=tasks.filter(t=>t.done).length,p=tasks.length?Math.round(done/tasks.length*100):0;
+ $("total").textContent=tasks.length;$("completed").textContent=done;$("percent").textContent=p+"%";$("progress").style.width=p+"%";
+ const date=$("filterDate").value,course=$("filterCourse").value;
+ const shown=tasks.filter(t=>(!date||t.date===date)&&(course==="All"||t.course===course)).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+ $("taskList").innerHTML=shown.length?shown.map(t=>`<div class="task ${t.done?"done":""}"><div><div class="taskname">${escapeHtml(t.name)}</div><div class="meta">${escapeHtml(t.course)} • ${t.date} • ${t.time} • ${t.duration} min • ${escapeHtml(t.kind)}</div></div><div class="taskbuttons"><button class="secondary" data-toggle="${t.id}">${t.done?"Undo":"Done"}</button><button class="danger" data-delete="${t.id}">Delete</button></div></div>`).join(""):'<div class="empty">No sessions found. Add a study session to get started.</div>';
+}
+$("taskForm").addEventListener("submit",e=>{
+ e.preventDefault();let course=$("customCourse").value.trim()||$("course").value;
+ if($("customCourse").value.trim()&&!customCourses.includes(course)){customCourses.push(course)}
+ tasks.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:$("taskName").value.trim(),course,date:$("studyDate").value,time:$("studyTime").value,duration:Number($("duration").value),kind:$("kind").value,done:false});
+ save();fillCourses();$("filterDate").value=$("studyDate").value;$("filterCourse").value="All";$("taskForm").reset();$("studyDate").value=iso(today);$("duration").value=60;render();
+});
+$("taskList").addEventListener("click",e=>{
+ const id=e.target.dataset.toggle||e.target.dataset.delete;if(!id)return;
+ if(e.target.dataset.toggle){tasks=tasks.map(t=>t.id===id?{...t,done:!t.done}:t)}
+ else{tasks=tasks.filter(t=>t.id!==id)}
+ save();render();
+});
+$("filterDate").addEventListener("change",render);$("filterCourse").addEventListener("change",render);
+$("allBtn").addEventListener("click",()=>{$("filterDate").value="";$("filterCourse").value="All";render()});
+$("exportBtn").addEventListener("click",()=>{const blob=new Blob([JSON.stringify({courses:customCourses,sessions:tasks},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="falcon-ai-study-schedule.json";a.click();URL.revokeObjectURL(a.href)});
+fillCourses();render();
+</script>
+</body></html>
